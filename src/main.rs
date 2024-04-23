@@ -14,7 +14,7 @@ pub struct App {
     gl: GlGraphics,
     grid: Vec<Vec<bool>>,
     rows: u32,
-    cols: u32, 
+    cols: u32,
     last_update: Instant,
 }
 
@@ -39,16 +39,49 @@ impl App {
         });
     }
 
-    fn update(&mut self, args: &UpdateArgs) {
+    fn update(&mut self, _args: &UpdateArgs) {
         if self.last_update.elapsed() >= Duration::from_millis(500) {
+            let grid_copy = self.grid.clone();
+
             for row in 0..self.rows {
                 for col in 0..self.cols {
-                    self.grid[row as usize][col as usize] = !self.grid[row as usize][col as usize];
+
+                    self.grid[row as usize][col as usize] = App::pixel(
+                        &grid_copy,
+                        row as i32,
+                        col as i32,
+                        self.rows as i32,
+                        self.cols as i32,
+                    );
                 }
             }
-            self.last_update = Instant::now(); // Réinitialiser le timer
+            self.last_update = Instant::now();
         }
     }
+
+    fn pixel(grid_copy: &Vec<Vec<bool>>, row: i32, col: i32, rows: i32, cols: i32) -> bool {
+        let mut alive_neighbors = 0;
+
+        for dx in -1..=1 {
+            for dy in -1..=1 {
+                if dx == 0 && dy == 0 {
+                    continue;
+                }
+
+                let nx = row + dx;
+                let ny = col + dy;
+
+                if nx >= 0 && ny >= 0 && nx < rows && ny < cols {
+                    if grid_copy[nx as usize][ny as usize] {
+                        alive_neighbors += 1;
+                    }
+                }
+            }
+        }
+
+        (alive_neighbors == 3) || (grid_copy[row as usize][col as usize] && (alive_neighbors == 2 || alive_neighbors == 3))
+    }
+
 }
 
 fn main() {
@@ -86,12 +119,61 @@ fn main() {
 }
 
 fn grid(grid: &mut Vec<Vec<bool>>, rows: usize, cols: usize) {
-    grid[20][20] = true;
+    /*
+     * Test 1
+     **/
+    // grid[5][5] = true;
+    // grid[4][6] = true;
+    // grid[4][4] = true;
+    // grid[6][6] = true;
+    // grid[7][5] = true;
+    // grid[21][21] = true;
 
-    // for row in 0..rows {
-    //     for col in 0..cols {
-    //         print!("{} ", if grid[row][col] { 'o' } else { 'x'});
-    //     }
-    //     println!();
+    /**
+     * Test 2
+     */
+    // let start_row = 1;
+    // let start_col = 1;
+
+    // if start_row + 2 < rows && start_col + 2 < cols {
+    //     grid[start_row][start_col + 1] = true;
+    //     grid[start_row + 1][start_col + 2] = true;
+    //     grid[start_row + 2][start_col] = true;
+    //     grid[start_row + 2][start_col + 1] = true;
+    //     grid[start_row + 2][start_col + 2] = true;
     // }
+
+    /**
+     * Test 3
+     */
+    // // Choisissez l'emplacement initial approprié pour éviter les problèmes de bord
+    // let start_row = 5;
+    // let start_col = 1;
+
+    // if start_row + 10 < rows && start_col + 36 < cols {
+    //     let indices = [
+    //         (5, 1), (5, 2), (6, 1), (6, 2), (3, 13), (3, 14), (4, 12), (4, 16), (5, 11), (5, 17),
+    //         (6, 11), (6, 15), (6, 17), (6, 18), (7, 11), (7, 17), (8, 12), (8, 16), (9, 13), (9, 14),
+    //         (1, 25), (2, 23), (2, 25), (3, 21), (3, 22), (4, 21), (4, 22), (5, 21), (5, 22), (6, 23),
+    //         (6, 25), (7, 25), (3, 35), (3, 36), (4, 35), (4, 36)
+    //     ];
+    //     for (dx, dy) in indices.iter() {
+    //         grid[start_row + dx][start_col + dy] = true;
+    //     }
+    // }
+
+    /**
+     * Test 4
+     */
+    let start_row = 10;
+    let start_col = 10;
+
+    if start_row + 1 < rows && start_col + 3 < cols {
+        grid[start_row][start_col + 1] = true;
+        grid[start_row][start_col + 2] = true;
+        grid[start_row][start_col + 3] = true;
+        grid[start_row + 1][start_col] = true;
+        grid[start_row + 1][start_col + 1] = true;
+        grid[start_row + 1][start_col + 2] = true;
+    }
 }
